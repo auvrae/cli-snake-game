@@ -3,8 +3,11 @@ const readline = require('readline');
 
 console.clear();
 var atMainMenu = true;
-var menuOptions = [`Start Game`, `Exit Game`];
+var menuOptions = [`Start Game`, 'Speed: ',`Exit Game`];
 var menuSelection = 0;
+var gameSpeedOptions = [250,150,50] // game loop time in ms
+var gameSpeedOptionsStrings = ['slow', 'default', 'fast']
+var gameSpeedSelection = 1;
 var locations = new Map;
 var initWalls = true;
 var food = new Object({
@@ -19,7 +22,6 @@ var player = new Object({
     tailArray: new Array(0),
     get length(){return(1+this.tailArray.length)} 
 })
-var gameSpeed = 150; // ms
 /** tail object
  * {
  *      locationX: Number,
@@ -27,22 +29,25 @@ var gameSpeed = 150; // ms
  * }
  */
 var GameLoopPaused = false;
-var GameLoop = setInterval(function(){
-    let xLength = process.stdout.columns;
-    let yLength = process.stdout.rows;
-    if(GameLoopPaused){return}
-    if(initWalls){
-        drawWalls(xLength,yLength);
-        initWalls = false;
-        return;
-    }
-    if(atMainMenu){
-        drawMenu()
-    }else{
-        // Main Game Loop
-        move();
-    }
-},gameSpeed);
+var GameLoop = null;
+var GameLoopF = function(){
+    GameLoop = setInterval(function(){
+        let xLength = process.stdout.columns;
+        let yLength = process.stdout.rows;
+        if(GameLoopPaused){return}
+        if(initWalls){
+            drawWalls(xLength,yLength);
+            initWalls = false;
+            return;
+        }
+        if(atMainMenu){
+            drawMenu()
+        }else{
+            // Main Game Loop
+            move();
+        }
+    },gameSpeedOptions[gameSpeedSelection]);
+}
 
 readline.emitKeypressEvents(process.stdin);
 process.stdin.setRawMode(true);
@@ -58,8 +63,22 @@ process.stdin.on('keypress', (str, key) => {
             else{menuSelection--}
         }
         if(key.name == 'down'){
-            if(menuSelection == 1){return}
+            if(menuSelection == 2){return}
             else{menuSelection++}
+        }
+        if(key.name == 'right'){
+            if(gameSpeedSelection == 2){return}
+            else{gameSpeedSelection++;
+                clearInterval(GameLoop);
+                GameLoopF();
+            }
+        }
+        if(key.name == 'left'){
+            if(gameSpeedSelection == 0){return}
+            else{gameSpeedSelection--
+                clearInterval(GameLoop);
+                GameLoopF();
+            }
         }
         if(key.name == 'return'){
             if(menuSelection == 0){
@@ -71,8 +90,7 @@ process.stdin.on('keypress', (str, key) => {
                 drawPlayer();
                 spawnFood();
                 GameLoopPaused = false;
-
-            }else if(menuSelection == 1){
+            }else if(menuSelection == 2){
                 // exit game
                 playerDeath()
             }
@@ -144,7 +162,10 @@ function drawMenu(){
     else{process.stdout.write(`${menuOptions[0]}`)}
     process.stdout.cursorTo(Math.floor(process.stdout.columns/2)-10,Math.floor(process.stdout.rows/2-1));
     if(menuSelection == 1){process.stdout.write(`\x1b[44m${menuOptions[1]}\x1b[0m`)}
-    else{process.stdout.write(`${menuOptions[1]}`)}
+    else{process.stdout.write(`${menuOptions[1]}${gameSpeedOptionsStrings[gameSpeedSelection]}         `)}
+    process.stdout.cursorTo(Math.floor(process.stdout.columns/2)-10,Math.floor(process.stdout.rows/2));
+    if(menuSelection == 2){process.stdout.write(`\x1b[44m${menuOptions[2]}\x1b[0m`)}
+    else{process.stdout.write(`${menuOptions[2]}`)}
     process.stdout.cursorTo(-1,-1);
 }
 
@@ -298,3 +319,4 @@ function getRandomInt(min, max) {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
 }
+GameLoopF();
