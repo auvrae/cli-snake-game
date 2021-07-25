@@ -19,7 +19,7 @@ var player = new Object({
     tailArray: new Array(0),
     get length(){return(1+this.tailArray.length)} 
 })
-var gameSpeed = 150;
+var gameSpeed = 150; // ms
 /** tail object
  * {
  *      locationX: Number,
@@ -40,7 +40,6 @@ var GameLoop = setInterval(function(){
         drawMenu()
     }else{
         // Main Game Loop
-        player.score += 1;
         move();
     }
 },gameSpeed);
@@ -236,6 +235,7 @@ function movePlayer(pX,pY,mathX,mathY){
 
 function move(){
     // check collision then move head then spawn new tail section then delete last tail piece.
+    if(player.direction == ''){return} // player hasn't started moving yet
     if(player.direction == 'up'){
         movePlayer(player.locationX,player.locationY,0,-1);
     }
@@ -247,7 +247,8 @@ function move(){
     }
     else if(player.direction == 'right'){
         movePlayer(player.locationX,player.locationY,+1,0);
-    }
+    } 
+    player.score += 1;// add score for being able to move without dying
 }
 
 function checkCollision(cX,cY){
