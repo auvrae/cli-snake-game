@@ -79,21 +79,23 @@ process.stdin.on('keypress', (str, key) => {
         }
     }else{
         // Playing
-        if(key.name == 'up'){
-            if(player.direction == 'down'){return}
-            player.direction = 'up';
-        }
-        if(key.name == 'down'){
-            if(player.direction == 'up'){return}
-            player.direction = 'down';
-        }
-        if(key.name == 'left'){
-            if(player.direction == 'right'){return}
-            player.direction = 'left';
-        }
-        if(key.name == 'right'){
-            if(player.direction == 'left'){return}
-            player.direction = 'right';
+        if(!GameLoopPaused){
+            if(key.name == 'up'){
+                if(player.direction == 'down'){return}
+                player.direction = 'up';
+            }
+            if(key.name == 'down'){
+                if(player.direction == 'up'){return}
+                player.direction = 'down';
+            }
+            if(key.name == 'left'){
+                if(player.direction == 'right'){return}
+                player.direction = 'left';
+            }
+            if(key.name == 'right'){
+                if(player.direction == 'left'){return}
+                player.direction = 'right';
+            }
         }
     }
 });
@@ -174,7 +176,6 @@ function spawnTail(sX,sY){
 
 var addTailFlag = false;
 function movePlayer(pX,pY,mathX,mathY){
-    GameLoopPaused = true;
     let colliison = checkCollision(pX+mathX,pY+mathY);
     if(colliison != 0){
         // collision detected
@@ -228,14 +229,13 @@ function movePlayer(pX,pY,mathX,mathY){
             addTailFlag = false;
         }
     }
-
-    GameLoopPaused = false; // end of function
     process.stdout.cursorTo(-1,-1)
 }
 
 function move(){
     // check collision then move head then spawn new tail section then delete last tail piece.
     if(player.direction == ''){return} // player hasn't started moving yet
+    GameLoopPaused = true; // pause main loop so you can't get double inputs
     if(player.direction == 'up'){
         movePlayer(player.locationX,player.locationY,0,-1);
     }
@@ -248,7 +248,8 @@ function move(){
     else if(player.direction == 'right'){
         movePlayer(player.locationX,player.locationY,+1,0);
     } 
-    player.score += 1;// add score for being able to move without dying
+    player.score += 1; // add score for being able to move without dying
+    GameLoopPaused = false;
 }
 
 function checkCollision(cX,cY){
