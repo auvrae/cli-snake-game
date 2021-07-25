@@ -3,6 +3,7 @@ It's a snake game!
 
 Features include:
 <pre>
-     Works with any window size!
-     Adjustible Game Speed!
+Works with any window size!
+Adjustible Game Speed!
 </pre>
+No Dependencies!
